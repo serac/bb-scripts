@@ -49,7 +49,6 @@ import os, socket, string, subprocess, sys
 from datetime import datetime
 from httplib import HTTPConnection, HTTPSConnection
 from urllib2 import HTTPError
-from urlparse import urlparse, urlunparse
 
 class HealthSummary:
   """Describes overall CAS health in terms of a status and list of MonitorResult."""
@@ -110,6 +109,7 @@ if not bbdisp:
 
 errmsg = None
 status = None
+conn = None
 try:
   conn = HTTPSConnection(host=cas_host, port=cas_port, timeout=timeout)
   conn.request('GET', '/status')
@@ -119,10 +119,10 @@ try:
 except socket.timeout:
   status = 'ERROR'
   errmsg = 'Socket connection or read timeout (%ss)' % timeout
-except socket.error as e:
+except socket.error, e:
   status = 'ERROR'
   errmsg = 'Socket error: %s' % e
-except Exception as e:
+except Exception, e:
   status = 'ERROR'
   errmsg = '%s::%s' % (e.__class__.__name__, str(e))
   if errmsg[-1] == ':':
