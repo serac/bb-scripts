@@ -29,6 +29,9 @@
 # Customize port number as needed
 cas_port = 8443
 
+# Customize context path as needed
+cas_context = '/cas'
+
 # Customize timeout period (in s) as needed
 # This value serves as both connection and read timeout periods
 timeout = 3
@@ -64,6 +67,9 @@ class HealthSummary:
 
   def __init__(self, response):
     """Creates a new instance from the HTTP response provided by the CAS /status URI."""
+    if not response.status in HealthSummary.CODE_MAP:
+      raise Exception("Unknown CAS health monitor HTTP response code %s" % response.status)
+
     self.status = HealthSummary.CODE_MAP[response.status]
     self.results = []
     for (header, value) in response.getheaders():
@@ -112,7 +118,7 @@ status = None
 conn = None
 try:
   conn = HTTPSConnection(host=cas_host, port=cas_port, timeout=timeout)
-  conn.request('GET', '/status')
+  conn.request('GET', cas_context + '/status')
   health = HealthSummary(conn.getresponse())
   status = health.status
   errmsg = '\n'.join([str(m) for m in health.failed_monitors()])
